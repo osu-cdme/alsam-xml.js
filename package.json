@@ -1,0 +1,26 @@
+{
+  "name": "oasis-xml",
+  "version": "1.0.0",
+  "description": " Convert XML files adhering to the America Makes OASIS XML Schema to and from a convenient JSON object",
+  "main": "oasis-xml.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osu-cdme/oasis-xml.js.git"
+  },
+  "keywords": [
+    "oasis",
+    "xml",
+    "america",
+    "makes",
+    "json"
+  ],
+  "author": "Anden Acitelli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/osu-cdme/oasis-xml.js/issues"
+  },
+  "homepage": "https://github.com/osu-cdme/oasis-xml.js#readme"
+}
