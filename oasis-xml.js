@@ -1,7 +1,7 @@
 /* This file provides functionality to load an OASIS XML file 
     and convert it into JavaScript data structures that are easier to work with. */
 
-class Header {
+export class Header {
   constructor({
     schemaVersion,
     layerNum,
@@ -20,7 +20,7 @@ class Header {
 }
 
 // Representation of a SegmentStyle, which helps us stay organized
-class SegmentStyle {
+export class SegmentStyle {
   constructor({
     id,
     velocityProfileID,
@@ -41,7 +41,7 @@ class SegmentStyle {
 }
 
 // Representation of a VelocityProfile, which helps us stay organized
-class VelocityProfile {
+export class VelocityProfile {
   constructor({
     id,
     velocity,
@@ -61,7 +61,7 @@ class VelocityProfile {
   }
 }
 
-class Trajectory {
+export class Trajectory {
   constructor({ id, pathProcessingMode, path }) {
     this.id = type;
     this.pathProcessingMode = pathProcessingMode;
@@ -70,7 +70,7 @@ class Trajectory {
 }
 
 // Contains data for a point as well as the segment style id used to get *to* that point (which is 'null' if it's the first one)
-class Segment {
+export class Segment {
   constructor({ x1, y1, x2, y2, segmentStyleID }) {
     this.x1 = x1;
     this.y1 = y1;
@@ -80,7 +80,7 @@ class Segment {
   }
 }
 
-class Path {
+export class Path {
   constructor({ type, tag, numSegments, skyWritingMode, segments }) {
     this.type = type;
     this.tag = tag;
@@ -94,7 +94,7 @@ class Path {
 // segmentSyles = [SegmentStyle] (array of SegmentStyle objects)
 // velocityProfiles = [VelocityProfile] (array of VelocityProfile objects)
 // trajectories = [Trajectory] (array of Trajectory objects)
-class Build {
+export class Build {
   constructor({ header, segmentStyles, velocityProfiles, trajectories }) {
     this.header = header;
     this.segmentStyles = segmentStyles;
@@ -208,7 +208,7 @@ function getTrajectories(doc) {
   return output;
 }
 
-function LoadXML(xmlStr) {
+export default function LoadXML(xmlStr) {
   const xmlDoc = parser.parseFromString(xmlStr, "text/xml");
 
   // 2a. Form 'Header' object
@@ -232,10 +232,8 @@ function LoadXML(xmlStr) {
   });
 }
 
+export function ExportXML(jsonObj) {}
+
 fetch("xml/scan_099.xml")
   .then((response) => response.text())
   .then((xmlStr) => console.log(LoadXML(xmlStr)));
-
-// 'Build' definition is used throughout the program and LoadXML() is the only function others need access to
-// To draw an analogy to Object-Oriented Languages, these two would be `public` and the rest would be `private`
-export { LoadXML, Build };
