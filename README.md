@@ -18,9 +18,9 @@ Performs two distinct functionalities:
 
 ## JSON Object Format
 
-`LoadXML()` returns a `Build` object, and `ExportXML()` expects a `Build` object as its only argument.
+`LoadXML()` returns a `Build` object, and `ExportXML()` expects a `Build` object as its first argument.
 
-The `Build` object's structure should be sufficiently demonstrated by the following class definitions
+The `Build` object's structure should be sufficiently demonstrated by the following class definitions:
 
 ```js
 // Master object returned by LoadXML and expected
