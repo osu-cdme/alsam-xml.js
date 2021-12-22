@@ -1,2 +1,7 @@
 # oasis-xml.js
-Convert XML files adhering to the America Makes OASIS XML Schema to and from a convenient JSON object.
+
+Provides an interface for saving and loading files corresponding to the
+
+Performs two distinct functionalities:
+
+- Loads an ALSAM XML file
