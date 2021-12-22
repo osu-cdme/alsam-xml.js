@@ -1,8 +1,8 @@
 {
-  "name": "oasis-xml",
+  "name": "alsam-xml",
   "version": "1.0.0",
-  "description": " Convert XML files adhering to the America Makes OASIS XML Schema to and from a convenient JSON object",
-  "main": "oasis-xml.js",
+  "description": "Save and Load XML files conforming to the ALSAM XML file format to and from an easy JSON format.",
+  "main": "alsam-xml.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/osu-cdme/oasis-xml.js#readme",
   "dependencies": {
+    "electron-fetch": "^1.7.4",
+    "esm": "^3.2.25",
     "node-fetch": "^3.1.0"
   }
 }
