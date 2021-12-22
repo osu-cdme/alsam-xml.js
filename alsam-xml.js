@@ -50,11 +50,11 @@ class VelocityProfile {
 
 // Segment Styles
 class SegmentStyle {
-  constructor({ id, velocityProfileID, laserMode, traveler }) {
+  constructor({ id, velocityProfileID, laserMode, travelers }) {
     this.id = id; // TYPE: string
     this.velocityProfileID = velocityProfileID; // TYPE: string
     this.laserMode = laserMode; // TYPE: string from set { "Independent", "FollowMe" }
-    this.traveler = traveler; // TYPE: `Traveler` Instance
+    this.travelers = travelers; // TYPE: List of `Traveler` Instances
   }
 }
 class Traveler {
@@ -149,8 +149,6 @@ function getHeader(xmlDoc) {
     buildDescription: getOptionalValue(xmlDoc, "BuildDescription"),
   });
 
-  console.log("output: ", output);
-
   // Verify string adheres to YYYY-MM-DD format
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(output.americaMakesSchemaVersion)) {
@@ -226,95 +224,99 @@ function getVelocityProfiles(xmlDoc) {
 function getSegmentStyles(xmlDoc) {
   let output = [];
   let segmentStyles = xmlDoc.getElementsByTagName("SegmentStyle");
+  let travelers = [];
   for (let style of segmentStyles) {
-    let traveler = style.getElementsByTagName("Traveler");
-    if (traveler.length > 0) {
-      traveler = traveler[0];
-      let wobble = traveler.getElementsByTagName("Wobble");
-      if (wobble.length > 0) {
-        wobble = wobble[0];
-        wobble = new Wobble({
-          on: getMandatoryValue(wobble, "On"),
-          freq: getMandatoryValue(wobble, "Freq"),
-          shape: getMandatoryValue(wobble, "Shape"),
-          transAmp: getMandatoryValue(wobble, "TransAmp"),
-          longAmp: getMandatoryValue(wobble, "LongAmp"),
+    let travelersXML = style.getElementsByTagName("Traveler");
+    if (travelersXML.length > 0) {
+      for (let travelerXML of travelersXML) {
+        let wobble = travelerXML.getElementsByTagName("Wobble");
+        if (wobble.length > 0) {
+          wobble = wobble[0];
+          wobble = new Wobble({
+            on: getMandatoryValue(wobble, "On"),
+            freq: getMandatoryValue(wobble, "Freq"),
+            shape: getMandatoryValue(wobble, "Shape"),
+            transAmp: getMandatoryValue(wobble, "TransAmp"),
+            longAmp: getMandatoryValue(wobble, "LongAmp"),
+          });
+
+          // Verify 'On' is either 0 or 1
+          if (parseInt(wobble.on) !== 0 && parseInt(wobble.on) !== 1) {
+            throw new Error(
+              `INVALID SCHEMA: Provided On ${wobble.on} must be either 0 or 1!`
+            );
+          }
+
+          // Verify Freq is an integer
+          if (!isIntegerRegex.test(wobble.freq)) {
+            throw new Error(
+              `INVALID SCHEMA: Provided Freq ${wobble.freq} must be an integer!`
+            );
+          }
+
+          // Verify Shape is either -1, 0, or 1
+          if (
+            parseInt(wobble.shape) !== -1 &&
+            parseInt(wobble.shape) !== 0 &&
+            parseInt(wobble.shape) !== 1
+          ) {
+            throw new Error(
+              `INVALID SCHEMA: Provided Shape ${wobble.shape} must be either -1, 0, or 1!`
+            );
+          }
+        } else {
+          wobble = null; // Don't throw an error, as this is just an optional field
+        }
+
+        let traveler = new Traveler({
+          id: getMandatoryValue(travelerXML, "ID"),
+          syncDelay: getOptionalValue(travelerXML, "SyncDelay"),
+          power: getOptionalValue(travelerXML, "Power"),
+          spotSize: getOptionalValue(travelerXML, "SpotSize"),
+          wobble: wobble,
         });
 
-        // Verify 'On' is either 0 or 1
-        if (parseInt(wobble.on) !== 0 && parseInt(wobble.on) !== 1) {
+        // Verify ID is an integer
+        if (!isIntegerRegex.test(traveler.id)) {
           throw new Error(
-            `INVALID SCHEMA: Provided On ${wobble.on} must be either 0 or 1!`
+            `INVALID SCHEMA: Provided Traveler ID ${traveler.id} must be an integer!`
           );
         }
 
-        // Verify Freq is an integer
-        if (!isIntegerRegex.test(wobble.freq)) {
-          throw new Error(
-            `INVALID SCHEMA: Provided Freq ${wobble.freq} must be an integer!`
-          );
-        }
-
-        // Verify Shape is either -1, 0, or 1
+        // Verify SyncDelay is an integer
         if (
-          parseInt(wobble.shape) !== -1 &&
-          parseInt(wobble.shape) !== 0 &&
-          parseInt(wobble.shape) !== 1
+          traveler.syncDelay !== null &&
+          !isIntegerRegex.test(traveler.syncDelay)
         ) {
           throw new Error(
-            `INVALID SCHEMA: Provided Shape ${wobble.shape} must be either -1, 0, or 1!`
+            `INVALID SCHEMA: Provided SyncDelay ${traveler.syncDelay} must be an integer!`
           );
         }
-      } else {
-        wobble = null; // Don't throw an error, as this is just an optional field
-      }
 
-      traveler = new Traveler({
-        id: getMandatoryValue(traveler, "ID"),
-        syncDelay: getMandatoryValue(traveler, "SyncDelay"),
-        power: getOptionalValue(traveler, "Power"),
-        spotSize: getOptionalValue(traveler, "SpotSize"),
-        wobble: wobble,
-      });
+        // Verify power is a number
+        if (!isFloatRegex.test(traveler.power)) {
+          throw new Error(
+            `INVALID SCHEMA: Provided Power ${traveler.power} must be a real number!`
+          );
+        }
 
-      // Verify ID is an integer
-      if (!isIntegerRegex.test(traveler.id)) {
-        throw new Error(
-          `INVALID SCHEMA: Provided Traveler ID ${traveler.id} must be an integer!`
-        );
-      }
+        // Verify spotSize is a number
+        if (!isFloatRegex.test(traveler.spotSize)) {
+          throw new Error(
+            `INVALID SCHEMA: Provided SpotSize ${traveler.spotSize} must be a real number!`
+          );
+        }
 
-      // Verify SyncDelay is an integer
-      if (!isIntegerRegex.test(traveler.syncDelay)) {
-        throw new Error(
-          `INVALID SCHEMA: Provided SyncDelay ${traveler.syncDelay} must be an integer!`
-        );
+        travelers.append(traveler);
       }
-
-      // Verify power is a number
-      if (!isFloatRegex.test(traveler.power)) {
-        throw new Error(
-          `INVALID SCHEMA: Provided Power ${traveler.power} must be a real number!`
-        );
-      }
-
-      // Verify spotSize is a number
-      if (!isFloatRegex.test(traveler.spotSize)) {
-        throw new Error(
-          `INVALID SCHEMA: Provided SpotSize ${traveler.spotSize} must be a real number!`
-        );
-      }
-    } else {
-      throw new Error(
-        'INVALID SCHEMA: Required "Traveler" tag not found in SegmentStyle of XML!'
-      );
     }
 
     let newSegmentStyle = new SegmentStyle({
       id: getMandatoryValue(style, "ID"),
       velocityProfileID: getMandatoryValue(style, "VelocityProfileID"),
-      laserMode: getMandatoryValue(style, "LaserMode"),
-      traveler: traveler,
+      laserMode:
+        traveler !== null ? getMandatoryValue(style, "LaserMode") : null, // Required if a Traveler exists (i.e. not a jump style)
+      travelers: travelers,
     });
 
     // Verify LaserMode is either Independent or FollowMe

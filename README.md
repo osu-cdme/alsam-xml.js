@@ -4,9 +4,11 @@ Provides an interface for saving and loading files corresponding to the ALSAM XM
 
 Performs two distinct functionalities:
 
-- Loads an ALSAM XML file into the below JSON data structure via `LoadXML(xmlString)`
-  - Does various validation checks: Ensure mandatory tags exist, ensure tag content is within the constraints of the schema (data types, positive integer, etc.). Not currently sure enough that every constraint is properly checked for, but will implement more sure checking soon.
-- (TODO) Exports a saved JSON data structure into the ALSAM XML file format via `ExportXML(jsonObject, filePath)`
+- Loads an ALSAM XML file into the below JSON data structure, doing various validation checks:
+  - Ensure mandatory tags exist
+  - Ensure tag content is within the constraints of the schema (data types, positive integer, etc.)
+- Exports a saved JSON data structure into the ALSAM XML file format via `ExportXML(jsonObject, filePath)`
+  - Not yet implemented, but will be soon
 
 ## Functions
 
@@ -75,11 +77,11 @@ class VelocityProfile {
 
 // Segment Styles
 class SegmentStyle {
-  constructor({ id, velocityProfileID, laserMode, traveler }) {
+  constructor({ id, velocityProfileID, laserMode, travelers }) {
     this.id = id; // TYPE: string
     this.velocityProfileID = velocityProfileID; // TYPE: string
     this.laserMode = laserMode; // TYPE: string from set { "Independent", "FollowMe" }
-    this.traveler = traveler; // TYPE: `Traveler` Instance
+    this.travelers = travelers; // TYPE: List of `Traveler` Instances
   }
 }
 class Traveler {
