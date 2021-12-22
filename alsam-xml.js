@@ -107,10 +107,10 @@ class Path {
 // Master object returned by LoadXML
 class Build {
   constructor({ header, segmentStyles, velocityProfiles, trajectories }) {
-    this.header = header;
-    this.segmentStyles = segmentStyles;
-    this.velocityProfiles = velocityProfiles;
-    this.trajectories = trajectories;
+    this.header = header; // TYPE: `Header` Instance
+    this.segmentStyles = segmentStyles; // TYPE: list of `SegmentStyle` Instances
+    this.velocityProfiles = velocityProfiles; // TYPE: list of `VelocityProfile` Instances
+    this.trajectories = trajectories; // TYPE: list of `Trajectory` Instances
   }
 }
 
