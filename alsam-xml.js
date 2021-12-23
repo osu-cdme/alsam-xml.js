@@ -3,18 +3,18 @@
 /* Based on ALSAM XML as of 2020-03-23 */
 
 // Relevant RegExes
-const isIntegerRegex = /^\d+$/;
-const isFloatRegex = /^\d+\.?\d*$/; // Technically tests for float OR integer, as integers are also floats
+const isIntegerRegex = /^[0-9]*$/;
+const isFloatRegex = /^[+-]?([0-9]*[.])?[0-9]+$/; // Technically tests for float OR integer, as integers are also floats
 
 // Header Information
 class Header {
   constructor({
-    americaMakesSchemaVersion, // TYPE: string of YYYY-MM-DD format
-    layerNum, // TYPE: int
-    layerThickness, // TYPE: float
-    absoluteHeight, // TYPE: float
-    dosingFactor, // TYPE: float
-    buildDescription, // TYPE: string (arbitrary)
+    americaMakesSchemaVersion = null, // TYPE: string of YYYY-MM-DD format
+    layerNum = null, // TYPE: int
+    layerThickness = null, // TYPE: float
+    absoluteHeight = null, // TYPE: float
+    dosingFactor = null, // TYPE: float
+    buildDescription = null, // TYPE: string (arbitrary)
   }) {
     this.americaMakesSchemaVersion = americaMakesSchemaVersion;
     this.layerNum = layerNum;
@@ -28,14 +28,14 @@ class Header {
 // Velocity Profiles
 class VelocityProfile {
   constructor({
-    id, // TYPE: string
-    velocity, // TYPE: float
-    mode, // TYPE: string from set { "Delay", "Auto" }
-    laserOnDelay, // TYPE: float (microseconds)
-    laserOffDelay, // TYPE: float (microseconds)
-    jumpDelay, // TYPE: float (microseconds)
-    markDelay, // TYPE: float (microseconds)
-    polygonDelay, // TYPE: float (microseconds)
+    id = null, // TYPE: string
+    velocity = null, // TYPE: float
+    mode = null, // TYPE: string from set { "Delay", "Auto" }
+    laserOnDelay = null, // TYPE: float (microseconds)
+    laserOffDelay = null, // TYPE: float (microseconds)
+    jumpDelay = null, // TYPE: float (microseconds)
+    markDelay = null, // TYPE: float (microseconds)
+    polygonDelay = null, // TYPE: float (microseconds)
   }) {
     this.id = id;
     this.velocity = velocity;
@@ -50,7 +50,12 @@ class VelocityProfile {
 
 // Segment Styles
 class SegmentStyle {
-  constructor({ id, velocityProfileID, laserMode, travelers }) {
+  constructor({
+    id = null,
+    velocityProfileID = null,
+    laserMode = null,
+    travelers = null,
+  }) {
     this.id = id; // TYPE: string
     this.velocityProfileID = velocityProfileID; // TYPE: string
     this.laserMode = laserMode; // TYPE: string from set { "Independent", "FollowMe" }
@@ -58,7 +63,13 @@ class SegmentStyle {
   }
 }
 class Traveler {
-  constructor({ id, syncDelay, power, spotSize, wobble }) {
+  constructor({
+    id = null,
+    syncDelay = null,
+    power = null,
+    spotSize = null,
+    wobble = null,
+  }) {
     this.id = id; // TYPE: int
     this.syncDelay = syncDelay; // TYPE: float (microseconds)
     this.power = power; // TYPE: float (watts)
@@ -67,7 +78,13 @@ class Traveler {
   }
 }
 class Wobble {
-  constructor({ on, freq, shape, transAmp, longAmp }) {
+  constructor({
+    on = null,
+    freq = null,
+    shape = null,
+    transAmp = null,
+    longAmp = null,
+  }) {
     this.on = on; // TYPE: bool
     this.freq = freq; // TYPE: float (Hz)
     this.shape = shape; // TYPE: int from set { -1, 0, 1 }
@@ -78,14 +95,21 @@ class Wobble {
 
 // Trajectories
 class Trajectory {
-  constructor({ trajectoryID, pathProcessingMode, path }) {
+  constructor({ trajectoryID = null, pathProcessingMode = null, path = null }) {
     this.trajectoryID = trajectoryID; // TYPE: string
     this.pathProcessingMode = pathProcessingMode; // TYPE: string from set { Sequential, Concurrent }
     this.path = path; // TYPE: `Path` Instance
   }
 }
 class Segment {
-  constructor({ x1, y1, x2, y2, segmentID, segStyle }) {
+  constructor({
+    x1 = null,
+    y1 = null,
+    x2 = null,
+    y2 = null,
+    segmentID = null,
+    segStyle = null,
+  }) {
     this.x1 = x1; // TYPE: int
     this.y1 = y1; // TYPE: int
     this.x2 = x2; // TYPE: int
@@ -95,7 +119,13 @@ class Segment {
   }
 }
 class Path {
-  constructor({ type, tag, numSegments, skyWritingMode, segments }) {
+  constructor({
+    type = null,
+    tag = null,
+    numSegments = null,
+    skyWritingMode = null,
+    segments = null,
+  }) {
     this.type = type; // TYPE: string from set { Hatch, Contour }
     this.tag = tag; // TYPE: string
     this.numSegments = numSegments; // TYPE: int
@@ -106,7 +136,12 @@ class Path {
 
 // Master object returned by LoadXML
 class Build {
-  constructor({ header, segmentStyles, velocityProfiles, trajectories }) {
+  constructor({
+    header = null,
+    segmentStyles = null,
+    velocityProfiles = null,
+    trajectories = null,
+  }) {
     this.header = header; // TYPE: `Header` Instance
     this.segmentStyles = segmentStyles; // TYPE: list of `SegmentStyle` Instances
     this.velocityProfiles = velocityProfiles; // TYPE: list of `VelocityProfile` Instances
@@ -126,15 +161,15 @@ function getOptionalValue(xmlNode, tagName) {
 // Untility function for retrieving a mandatory attribute; we get it if it exists, otherwise *throw a fatal error*
 function getMandatoryValue(xmlNode, tagName) {
   const node = xmlNode.getElementsByTagName(tagName)[0];
-  console.log("node: ", node);
   if (node) {
-    console.log("node.textContent: ", node.textContent);
     return node.textContent;
   }
   throw new Error(
     `INVALID SCHEMA: Mandatory tag ${tagName} not found in XML as child of tag ${xmlNode.tagName}`
   );
 }
+
+// TODO: Use Constructor defaults to convert a lot of this "figure out all values, then construct" to "construct, then fill in all values"
 
 function getHeader(xmlDoc) {
   let output = new Header({
@@ -224,8 +259,8 @@ function getVelocityProfiles(xmlDoc) {
 function getSegmentStyles(xmlDoc) {
   let output = [];
   let segmentStyles = xmlDoc.getElementsByTagName("SegmentStyle");
-  let travelers = [];
   for (let style of segmentStyles) {
+    let travelers = [];
     let travelersXML = style.getElementsByTagName("Traveler");
     if (travelersXML.length > 0) {
       for (let travelerXML of travelersXML) {
@@ -307,7 +342,7 @@ function getSegmentStyles(xmlDoc) {
           );
         }
 
-        travelers.append(traveler);
+        travelers.push(traveler);
       }
     }
 
@@ -315,12 +350,13 @@ function getSegmentStyles(xmlDoc) {
       id: getMandatoryValue(style, "ID"),
       velocityProfileID: getMandatoryValue(style, "VelocityProfileID"),
       laserMode:
-        traveler !== null ? getMandatoryValue(style, "LaserMode") : null, // Required if a Traveler exists (i.e. not a jump style)
+        travelers.length !== 0 ? getMandatoryValue(style, "LaserMode") : null, // Required if a Traveler exists (i.e. not a jump style)
       travelers: travelers,
     });
 
     // Verify LaserMode is either Independent or FollowMe
     if (
+      newSegmentStyle.laserMode !== null &&
       newSegmentStyle.laserMode !== "Independent" &&
       newSegmentStyle.laserMode !== "FollowMe"
     ) {
@@ -329,7 +365,7 @@ function getSegmentStyles(xmlDoc) {
       );
     }
 
-    output.push();
+    output.push(newSegmentStyle);
   }
 
   return output;
@@ -339,17 +375,80 @@ function getSegmentStyles(xmlDoc) {
 function getTrajectories(doc) {
   let trajectories = doc.getElementsByTagName("Trajectory");
   let output = [];
-  trajectories.forEach((trajectoryXML) => {
-    let trajectory = new Trajectory();
+  for (let trajectoryXML of trajectories) {
+    let paths = trajectoryXML.getElementsByTagName("Path");
+    let path = null;
+    if (paths.length !== 0) {
+      let pathXML = trajectoryXML.getElementsByTagName("Path")[0];
+      path = new Path({
+        type: getMandatoryValue(pathXML, "Type"),
+        tag: getMandatoryValue(pathXML, "Tag"),
+        numSegments: getMandatoryValue(pathXML, "NumSegments"),
+        skyWritingMode: getMandatoryValue(pathXML, "SkyWritingMode"),
+        segments: [],
+      });
 
-    // ID (required)
-    trajectory.id = getRequiredValue(trajectoryXML, "TrajectoryID");
+      if (path.type !== "hatch" && path.type !== "contour") {
+        throw new Error(
+          `INVALID SCHEMA: Provided Path type ${path.type} must be either 'hatch' or 'contour'`
+        );
+      }
 
-    // Path processing mode (required)
-    trajectory.pathProcessingMode = getRequiredValue(
-      trajectoryXML,
-      "PathProcessingMode"
-    );
+      if (
+        path.skyWritingMode !== "0" &&
+        path.skyWritingMode !== "1" &&
+        path.skyWritingMode !== "2" &&
+        path.skyWritingMode !== "3"
+      ) {
+        throw new Error(
+          `INVALID SCHEMA: Provided SkyWritingMode ${path.skyWritingMode} must be 0, 1, 2, or 3.`
+        );
+      }
+
+      // We save this as a line segment rather than the points themselves to make drawing easier later
+      // Just generally saves us a ton of work later and feels more readable and less confusing
+      let start = pathXML.getElementsByTagName("Start")[0];
+
+      // First segment will go from <Start> node to first actual Segment
+      // Subsequent ones will go from current node to cached x/y from last node
+      let lastX = start.getElementsByTagName("X")[0].textContent,
+        lastY = start.getElementsByTagName("Y")[0].textContent;
+
+      let segmentsXML = pathXML.getElementsByTagName("Segment");
+      for (let segmentXML of segmentsXML) {
+        let segment = new Segment({
+          x1: lastX,
+          y1: lastY,
+          x2: getMandatoryValue(segmentXML, "X"),
+          y2: getMandatoryValue(segmentXML, "Y"),
+          segmentID: getOptionalValue(segmentXML, "SegmentID"),
+          segStyle: getMandatoryValue(segmentXML, "SegStyle"),
+        });
+
+        // Verify x2 and y2 are floats
+        if (!isFloatRegex.test(segment.x2) || !isFloatRegex.test(segment.y2)) {
+          throw new Error(
+            `INVALID SCHEMA: Provided X and Y values ${segment.x2} and ${segment.y2} must be real numbers!`
+          );
+        }
+
+        path.segments.push(segment);
+        lastX = segment.x2;
+        lastY = segment.y2;
+      }
+    }
+
+    let trajectory = new Trajectory({
+      trajectoryID: getMandatoryValue(trajectoryXML, "TrajectoryID"),
+      pathProcessingMode: getMandatoryValue(
+        trajectoryXML,
+        "PathProcessingMode"
+      ),
+      path: path,
+    });
+
+    console.log("trajectory: ", trajectory);
+
     if (
       trajectory.pathProcessingMode !== "sequential" &&
       trajectory.pathProcessingMode !== "concurrent"
@@ -359,66 +458,8 @@ function getTrajectories(doc) {
       );
     }
 
-    let pathXML = trajectoryXML.getElementsByTagName("Path")[0];
-    let path = new Path({
-      type: getMandatoryValue(pathXML, "Type"),
-      tag: getMandatoryValue(pathXML, "Tag"),
-      numSegments: getMandatoryValue(pathXML, "NumSegments"),
-      skyWritingMode: getMandatoryValue(pathXML, "SkyWritingMode"),
-      segments: [],
-    });
-
-    if (path.type !== "hatch" && path.type !== "contour") {
-      throw new Error(
-        `INVALID SCHEMA: Provided Path type ${path.type} must be either 'hatch' or 'contour'`
-      );
-    }
-
-    if (
-      path.skyWritingMode !== "0" &&
-      path.skyWritingMode !== "1" &&
-      path.skyWritingMode !== "2" &&
-      path.skyWritingMode !== "3"
-    ) {
-      throw new Error(
-        `INVALID SCHEMA: Provided SkyWritingMode ${path.skyWritingMode} must be 0, 1, 2, or 3.`
-      );
-    }
-
-    // We save this as a line segment rather than the points themselves to make drawing easier later
-    // Just generally saves us a ton of work later and feels more readable and less confusing
-    let start = pathXML.getElementsByTagName("Start")[0].textContent;
-
-    // First segment will go from <Start> node to first actual Segment
-    // Subsequent ones will go from current node to cached x/y from last node
-    let lastX = start.getElementsByTagName("X")[0].textContent,
-      lastY = start.getElementsByTagName("Y")[0].textContent;
-
-    let segmentsXML = pathXML.getElementsByTagName("Segment");
-    segmentsXML.forEach((segmentXML) => {
-      let segment = new Segment({
-        x1: lastX,
-        y1: lastY,
-        x2: getMandatoryValue(segmentXML, "X"),
-        y2: getMandatoryValue(segmentXML, "Y"),
-        segmentID: getOptionalValue(segmentXML, "SegmentID"),
-        segStyle: getRequiredValue(segmentXML, "SegStyle"),
-      });
-
-      // Verify x2 and y2 are floats
-      if (!isFloatRegex.test(segment.x2) || !isFloatRegex.test(segment.y2)) {
-        throw new Error(
-          `INVALID SCHEMA: Provided X and Y values ${segment.x2} and ${segment.y2} must be real numbers!`
-        );
-      }
-
-      path.segments.push(segment);
-      lastX = segment.x2;
-      lastY = segment.y2;
-    });
-    trajectory.path = path;
     output.push(trajectory);
-  });
+  }
   return output;
 }
 
