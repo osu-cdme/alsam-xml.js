@@ -447,8 +447,6 @@ function getTrajectories(doc) {
       path: path,
     });
 
-    console.log("trajectory: ", trajectory);
-
     if (
       trajectory.pathProcessingMode !== "sequential" &&
       trajectory.pathProcessingMode !== "concurrent"
