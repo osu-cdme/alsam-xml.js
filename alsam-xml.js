@@ -234,6 +234,7 @@ function getVelocityProfiles(xmlDoc) {
       laserOnDelay: getMandatoryValue(style, "LaserOnDelay"),
       laserOffDelay: getMandatoryValue(style, "LaserOffDelay"),
       jumpDelay: getMandatoryValue(style, "JumpDelay"),
+      markDelay: getMandatoryValue(style, "MarkDelay"),
       polygonDelay: getMandatoryValue(style, "PolygonDelay"),
     });
 
@@ -486,6 +487,116 @@ function LoadXML(xmlStr) {
   });
 }
 
-function ExportXML(jsonObj) {}
+function GetHeaderString(build) {
+  let output = "";
+  output += "<Header>\n";
+  output += `  <AmericaMakesSchemaVersion>${build.header.americaMakesSchemaVersion}</AmericaMakesSchemaVersion>\n`;
+  // Not every field is mandatory; during load, we set optional parameters that weren't specified to null, so we just check that
+  if (build.header.layerNum != null)
+    output += `  <LayerNum>${build.header.layerNum}</LayerNum>\n`;
+  output += `  <LayerThickness>${build.header.layerThickness}</LayerThickness>\n`;
+  if (build.header.absoluteHeight != null)
+    output += `  <AbsoluteHeight>${build.header.absoluteHeight}</AbsoluteHeight>\n`;
+  if (build.header.dosingFactor != null)
+    output += `  <DosingFactor>${build.header.dosingFactor}</DosingFactor>\n`;
+  if (build.header.buildDescription != null)
+    output += `  <BuildDescription>${build.header.buildDescription}</BuildDescription>\n`;
+  output += "</Header>\n";
+  return output;
+}
+
+function GetSegmentStylesString(build) {
+  let output = "";
+  output += "<SegmentStyleList>\n";
+  for (let i = 0; i < build.segmentStyles.length; i++) {
+    let segmentStyle = build.segmentStyles[i];
+    output += "  <SegmentStyle>\n";
+    output += `    <ID>${segmentStyle.id}</ID>\n`;
+    output += `    <VelocityProfileID>${segmentStyle.velocityProfileID}</VelocityProfileID>\n`;
+    if (segmentStyle.laserMode != null)
+      output += `    <LaserMode>${segmentStyle.laserMode}</LaserMode>\n`;
+    if (segmentStyle.travelers != null) {
+      for (let j = 0; j < segmentStyle.travelers.length; j++) {
+        let traveler = segmentStyle.travelers[j];
+        output += "    <Traveler>\n";
+        output += `      <ID>${traveler.id}</ID>\n`;
+        if (traveler.syncDelay != null)
+          output += `      <SyncDelay>${traveler.syncDelay}</SyncDelay>\n`;
+        if (traveler.power != null)
+          output += `      <Power>${traveler.power}</Power>\n`;
+        if (traveler.spotSize != null)
+          output += `      <SpotSize>${traveler.spotSize}</SpotSize>\n`;
+        if (traveler.wobble != null) {
+          output += "      <Wobble>\n";
+          output += `        <On>${traveler.wobble.on}</On>\n`;
+          output += `        <Freq>${traveler.wobble.freq}</Freq>\n`;
+          output += `        <Shape>${traveler.wobble.shape}</Shape>\n`;
+          output += `        <TransAmp>${traveler.wobble.transAmp}</TransAmp>\n`;
+          output += `        <LongAmp>${traveler.wobble.longAmp}</LongAmp>\n`;
+          output += "      </Wobble>\n";
+        }
+        output += "    </Traveler>\n";
+      }
+    }
+    output += "  </SegmentStyle>\n";
+  }
+  output += "</SegmentStyleList>\n";
+  return output;
+}
+
+function GetVelocityProfilesString(build) {
+  let output = "";
+  output += "<VelocityProfileList>\n";
+  for (let i = 0; i < build.velocityProfiles.length; i++) {
+    let velocityProfile = build.velocityProfiles[i];
+    output += "  <VelocityProfile>\n";
+    output += `    <ID>${velocityProfile.id}</ID>\n`;
+    output += `    <Velocity>${velocityProfile.velocity}</Velocity>\n`;
+    output += `    <Mode>${velocityProfile.mode}</Mode>\n`;
+    output += `    <LaserOnDelay>${velocityProfile.laserOnDelay}</LaserOnDelay>\n`;
+    output += `    <LaserOffDelay>${velocityProfile.laserOffDelay}</LaserOffDelay>\n`;
+    output += `    <JumpDelay>${velocityProfile.jumpDelay}</JumpDelay>\n`;
+    output += `    <MarkDelay>${velocityProfile.markDelay}</MarkDelay>\n`;
+    output += `    <PolygonDelay>${velocityProfile.polygonDelay}</PolygonDelay>\n`;
+    output += "  </VelocityProfile>\n";
+  }
+  output += "</VelocityProfileList>\n";
+  return output;
+}
+
+function GetTrajectoriesString(build) {
+  let output = "";
+  return output;
+}
+
+// Returns an XML string corresponding to the passed-in Build object
+// NOTE: Assumes the passed-in `Build` object is valid, meaning it does no validation like `LoadXML()` does
+function ExportXML(build) {
+  console.log("build: ", build);
+  let output = "";
+
+  // Append XML opening tag
+  output +=
+    '<?xml version="1.0"?><!--Scan file created using OSU CDME\'s cdme-scangen-ui.-->\n';
+  output += "<Layer>\n";
+
+  // Append header
+  output += GetHeaderString(build);
+
+  // Append segment styles
+  output += GetSegmentStylesString(build);
+
+  // Append velocity profiles
+  output += GetVelocityProfilesString(build);
+
+  // Append trajectories
+  // output += GetTrajectoriesString(build);
+
+  // Append XML closing tag
+  output += "\n</Layer>";
+
+  return output;
+}
 
 exports.LoadXML = LoadXML;
+exports.ExportXML = ExportXML;
