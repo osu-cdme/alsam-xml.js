@@ -566,13 +566,48 @@ function GetVelocityProfilesString(build) {
 
 function GetTrajectoriesString(build) {
   let output = "";
+  output += "<TrajectoryList>\n";
+  for (let i = 0; i < build.trajectories.length; i++) {
+    let trajectory = build.trajectories[i];
+    output += "  <Trajectory>\n";
+    output += `    <TrajectoryID>${trajectory.trajectoryID}</TrajectoryID>\n`;
+    output += `    <PathProcessingMode>${trajectory.pathProcessingMode}</PathProcessingMode>\n`;
+    if (trajectory.path !== null) {
+      output += "    <Path>\n";
+      output += `      <Type>${trajectory.path.type}</Type>\n`;
+      output += `      <Tag>${trajectory.path.tag}</Tag>\n`;
+      output += `      <NumSegments>${trajectory.path.numSegments}</NumSegments>\n`;
+      output += `      <SkyWritingMode>${trajectory.path.skyWritingMode}</SkyWritingMode>\n`;
+      if (trajectory.path.numSegments > 0) {
+        output += "      <Start>\n";
+        output += `        <X>${trajectory.path.segments[0].x1}</X>\n`;
+        output += `        <Y>${trajectory.path.segments[0].y1}</Y>\n`;
+        output += "      </Start>\n";
+        for (let j = 0; j < trajectory.path.segments.length; j++) {
+          let segment = trajectory.path.segments[j];
+          output += "      <Segment>\n";
+          if (segment.segmentID != null) {
+            output += `        <SegmentID>${segment.segmentID}</SegmentID>\n`;
+          }
+          output += `        <SegStyle>${segment.segStyle}</SegStyle>\n`;
+          output += "        <End>\n";
+          output += `          <X>${segment.x2}</X>\n`;
+          output += `          <Y>${segment.y2}</Y>\n`;
+          output += "        </End>\n";
+          output += "      </Segment>\n";
+        }
+      }
+      output += "    </Path>\n";
+    }
+    output += "  </Trajectory>\n";
+  }
+  output += "</TrajectoryList>\n";
   return output;
 }
 
 // Returns an XML string corresponding to the passed-in Build object
 // NOTE: Assumes the passed-in `Build` object is valid, meaning it does no validation like `LoadXML()` does
 function ExportXML(build) {
-  console.log("build: ", build);
   let output = "";
 
   // Append XML opening tag
@@ -590,7 +625,7 @@ function ExportXML(build) {
   output += GetVelocityProfilesString(build);
 
   // Append trajectories
-  // output += GetTrajectoriesString(build);
+  output += GetTrajectoriesString(build);
 
   // Append XML closing tag
   output += "\n</Layer>";
