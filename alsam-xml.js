@@ -197,6 +197,8 @@ function getHeader(xmlDoc) {
     throw new Error(
       `INVALID SCHEMA: Provided LayerNum ${output.layerNum} must be an integer more than zero!`
     );
+  } else {
+    output.layerNum = parseInt(output.layerNum);
   }
 
   // Verify layerThickness is more than zero
@@ -204,6 +206,8 @@ function getHeader(xmlDoc) {
     throw new Error(
       `INVALID SCHEMA: Provided LayerThickness ${output.layerThickness} must be a real number more than zero!`
     );
+  } else {
+    output.layerThickness = parseFloat(output.layerThickness);
   }
 
   // Verify AbsoluteHeight is more than zero
@@ -211,6 +215,8 @@ function getHeader(xmlDoc) {
     throw new Error(
       `INVALID SCHEMA: Provided AbsoluteHeight ${output.absoluteHeight} must be a real number more than zero!`
     );
+  } else {
+    output.absoluteHeight = parseFloat(output.absoluteHeight);
   }
 
   // Verify DosingFactor is more than zero
@@ -218,6 +224,8 @@ function getHeader(xmlDoc) {
     throw new Error(
       `INVALID SCHEMA: Provided DosingFactor ${output.dosingFactor} must be a real number more than zero!`
     );
+  } else {
+    output.dosingFactor = parseFloat(output.dosingFactor);
   }
 
   return output;
@@ -243,6 +251,8 @@ function getVelocityProfiles(xmlDoc) {
       throw new Error(
         `INVALID SCHEMA: Provided Velocity ${profile.velocity} must be a real number more than zero!`
       );
+    } else {
+      profile.velocity = parseFloat(profile.velocity);
     }
 
     // Verify 'Mode' is either 'Delay' or 'Auto'
@@ -281,6 +291,8 @@ function getSegmentStyles(xmlDoc) {
             throw new Error(
               `INVALID SCHEMA: Provided On ${wobble.on} must be either 0 or 1!`
             );
+          } else {
+            wobble.on = parseInt(wobble.on) ? true : false;
           }
 
           // Verify Freq is an integer
@@ -288,6 +300,8 @@ function getSegmentStyles(xmlDoc) {
             throw new Error(
               `INVALID SCHEMA: Provided Freq ${wobble.freq} must be an integer!`
             );
+          } else {
+            wobble.freq = parseInt(wobble.freq);
           }
 
           // Verify Shape is either -1, 0, or 1
@@ -299,6 +313,8 @@ function getSegmentStyles(xmlDoc) {
             throw new Error(
               `INVALID SCHEMA: Provided Shape ${wobble.shape} must be either -1, 0, or 1!`
             );
+          } else {
+            wobble.shape = parseInt(wobble.shape);
           }
         } else {
           wobble = null; // Don't throw an error, as this is just an optional field
@@ -317,6 +333,8 @@ function getSegmentStyles(xmlDoc) {
           throw new Error(
             `INVALID SCHEMA: Provided Traveler ID ${traveler.id} must be an integer!`
           );
+        } else {
+          traveler.id = parseInt(traveler.id);
         }
 
         // Verify SyncDelay is an integer
@@ -327,6 +345,8 @@ function getSegmentStyles(xmlDoc) {
           throw new Error(
             `INVALID SCHEMA: Provided SyncDelay ${traveler.syncDelay} must be an integer!`
           );
+        } else {
+          traveler.syncDelay = parseInt(traveler.syncDelay);
         }
 
         // Verify power is a number
@@ -334,6 +354,8 @@ function getSegmentStyles(xmlDoc) {
           throw new Error(
             `INVALID SCHEMA: Provided Power ${traveler.power} must be a real number!`
           );
+        } else {
+          traveler.power = parseFloat(traveler.power);
         }
 
         // Verify spotSize is a number
@@ -341,6 +363,8 @@ function getSegmentStyles(xmlDoc) {
           throw new Error(
             `INVALID SCHEMA: Provided SpotSize ${traveler.spotSize} must be a real number!`
           );
+        } else {
+          traveler.spotSize = parseFloat(traveler.spotSize);
         }
 
         travelers.push(traveler);
@@ -404,6 +428,8 @@ function getTrajectories(doc) {
         throw new Error(
           `INVALID SCHEMA: Provided SkyWritingMode ${path.skyWritingMode} must be 0, 1, 2, or 3.`
         );
+      } else {
+        path.skyWritingMode = parseInt(path.skyWritingMode);
       }
 
       // We save this as a line segment rather than the points themselves to make drawing easier later
@@ -414,6 +440,16 @@ function getTrajectories(doc) {
       // Subsequent ones will go from current node to cached x/y from last node
       let lastX = start.getElementsByTagName("X")[0].textContent,
         lastY = start.getElementsByTagName("Y")[0].textContent;
+
+      // Verify x1 and y1 are floats
+      if (!isFloatRegex.test(lastX) || !isFloatRegex.test(lastY)) {
+        throw new Error(
+          `INVALID SCHEMA: Provided X and Y values ${lastX} and ${lastY} must be real numbers!`
+        );
+      } else {
+        lastX = parseFloat(lastX);
+        lastY = parseFloat(lastY);
+      }
 
       let segmentsXML = pathXML.getElementsByTagName("Segment");
       for (let segmentXML of segmentsXML) {
@@ -431,6 +467,9 @@ function getTrajectories(doc) {
           throw new Error(
             `INVALID SCHEMA: Provided X and Y values ${segment.x2} and ${segment.y2} must be real numbers!`
           );
+        } else {
+          segment.x2 = parseFloat(segment.x2);
+          segment.y2 = parseFloat(segment.y2);
         }
 
         path.segments.push(segment);
