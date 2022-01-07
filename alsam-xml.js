@@ -674,3 +674,8 @@ function ExportXML(build) {
 
 exports.LoadXML = LoadXML;
 exports.ExportXML = ExportXML;
+
+exports.SegmentStyle = SegmentStyle;
+exports.Traveler = Traveler;
+exports.Wobble = Wobble;
+exports.VelocityProfile = VelocityProfile;
