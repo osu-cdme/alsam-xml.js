@@ -398,12 +398,10 @@ function getSegmentStyles(xmlDoc) {
 
 // Returns an array of 'Trajectory' objects
 function getTrajectories(doc) {
-  console.log("doc: ", doc);
   let trajectories = doc.getElementsByTagName("Trajectory");
   let output = [];
   for (let trajectoryXML of trajectories) {
     let pathsXML = trajectoryXML.getElementsByTagName("Path");
-    console.log("pathsXML: ", pathsXML);
     let paths = [];
     for (let pathXML of pathsXML) {
       let path = new Path({
@@ -479,7 +477,6 @@ function getTrajectories(doc) {
       paths.push(path);
     }
 
-    console.log("paths: ", paths);
     let trajectory = new Trajectory({
       trajectoryID: getMandatoryValue(trajectoryXML, "TrajectoryID"),
       pathProcessingMode: getMandatoryValue(
