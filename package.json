@@ -1,8 +1,8 @@
 {
   "name": "alsam-xml",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "Save and Load XML files conforming to the ALSAM XML file format to and from an easy JSON format.",
-  "main": "alsam-xml.js",
+  "main": "alsam-xml",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

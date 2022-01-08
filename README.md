@@ -113,10 +113,10 @@ class Wobble {
 
 // Trajectories
 class Trajectory {
-  constructor({ trajectoryID = null, pathProcessingMode = null, path = null }) {
+  constructor({ trajectoryID = null, pathProcessingMode = null, paths = [] }) {
     this.trajectoryID = trajectoryID; // TYPE: string
     this.pathProcessingMode = pathProcessingMode; // TYPE: string from set { Sequential, Concurrent }
-    this.path = path; // TYPE: `Path` Instance
+    this.paths = paths; // TYPE: Array of `Path` instances
   }
 }
 class Segment {

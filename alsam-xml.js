@@ -95,10 +95,10 @@ class Wobble {
 
 // Trajectories
 class Trajectory {
-  constructor({ trajectoryID = null, pathProcessingMode = null, path = null }) {
+  constructor({ trajectoryID = null, pathProcessingMode = null, paths = [] }) {
     this.trajectoryID = trajectoryID; // TYPE: string
     this.pathProcessingMode = pathProcessingMode; // TYPE: string from set { Sequential, Concurrent }
-    this.path = path; // TYPE: `Path` Instance
+    this.paths = paths; // TYPE: Array of `Path` instances
   }
 }
 class Segment {
@@ -398,14 +398,15 @@ function getSegmentStyles(xmlDoc) {
 
 // Returns an array of 'Trajectory' objects
 function getTrajectories(doc) {
+  console.log("doc: ", doc);
   let trajectories = doc.getElementsByTagName("Trajectory");
   let output = [];
   for (let trajectoryXML of trajectories) {
-    let paths = trajectoryXML.getElementsByTagName("Path");
-    let path = null;
-    if (paths.length !== 0) {
-      let pathXML = trajectoryXML.getElementsByTagName("Path")[0];
-      path = new Path({
+    let pathsXML = trajectoryXML.getElementsByTagName("Path");
+    console.log("pathsXML: ", pathsXML);
+    let paths = [];
+    for (let pathXML of pathsXML) {
+      let path = new Path({
         type: getMandatoryValue(pathXML, "Type"),
         tag: getMandatoryValue(pathXML, "Tag"),
         numSegments: getMandatoryValue(pathXML, "NumSegments"),
@@ -464,9 +465,7 @@ function getTrajectories(doc) {
 
         // Verify x2 and y2 are floats
         if (!isFloatRegex.test(segment.x2) || !isFloatRegex.test(segment.y2)) {
-          throw new Error(
-            `INVALID SCHEMA: Provided X and Y values ${segment.x2} and ${segment.y2} must be real numbers!`
-          );
+          throw `INVALID SCHEMA: Provided X and Y values ${segment.x2} and ${segment.y2} must be real numbers!`;
         } else {
           segment.x2 = parseFloat(segment.x2);
           segment.y2 = parseFloat(segment.y2);
@@ -476,15 +475,18 @@ function getTrajectories(doc) {
         lastX = segment.x2;
         lastY = segment.y2;
       }
+
+      paths.push(path);
     }
 
+    console.log("paths: ", paths);
     let trajectory = new Trajectory({
       trajectoryID: getMandatoryValue(trajectoryXML, "TrajectoryID"),
       pathProcessingMode: getMandatoryValue(
         trajectoryXML,
         "PathProcessingMode"
       ),
-      path: path,
+      paths: paths,
     });
 
     if (
@@ -611,32 +613,34 @@ function GetTrajectoriesString(build) {
     output += "  <Trajectory>\n";
     output += `    <TrajectoryID>${trajectory.trajectoryID}</TrajectoryID>\n`;
     output += `    <PathProcessingMode>${trajectory.pathProcessingMode}</PathProcessingMode>\n`;
-    if (trajectory.path !== null) {
-      output += "    <Path>\n";
-      output += `      <Type>${trajectory.path.type}</Type>\n`;
-      output += `      <Tag>${trajectory.path.tag}</Tag>\n`;
-      output += `      <NumSegments>${trajectory.path.numSegments}</NumSegments>\n`;
-      output += `      <SkyWritingMode>${trajectory.path.skyWritingMode}</SkyWritingMode>\n`;
-      if (trajectory.path.numSegments > 0) {
-        output += "      <Start>\n";
-        output += `        <X>${trajectory.path.segments[0].x1}</X>\n`;
-        output += `        <Y>${trajectory.path.segments[0].y1}</Y>\n`;
-        output += "      </Start>\n";
-        for (let j = 0; j < trajectory.path.segments.length; j++) {
-          let segment = trajectory.path.segments[j];
-          output += "      <Segment>\n";
-          if (segment.segmentID != null) {
-            output += `        <SegmentID>${segment.segmentID}</SegmentID>\n`;
+    if (trajectory.paths.length !== 0) {
+      trajectory.paths.forEach((path) => {
+        output += "    <Path>\n";
+        output += `      <Type>${path.type}</Type>\n`;
+        output += `      <Tag>${path.tag}</Tag>\n`;
+        output += `      <NumSegments>${path.numSegments}</NumSegments>\n`;
+        output += `      <SkyWritingMode>${path.skyWritingMode}</SkyWritingMode>\n`;
+        if (path.numSegments > 0) {
+          output += "      <Start>\n";
+          output += `        <X>${path.segments[0].x1}</X>\n`;
+          output += `        <Y>${path.segments[0].y1}</Y>\n`;
+          output += "      </Start>\n";
+          for (let j = 0; j < path.segments.length; j++) {
+            let segment = path.segments[j];
+            output += "      <Segment>\n";
+            if (segment.segmentID != null) {
+              output += `        <SegmentID>${segment.segmentID}</SegmentID>\n`;
+            }
+            output += `        <SegStyle>${segment.segStyle}</SegStyle>\n`;
+            output += "        <End>\n";
+            output += `          <X>${segment.x2}</X>\n`;
+            output += `          <Y>${segment.y2}</Y>\n`;
+            output += "        </End>\n";
+            output += "      </Segment>\n";
           }
-          output += `        <SegStyle>${segment.segStyle}</SegStyle>\n`;
-          output += "        <End>\n";
-          output += `          <X>${segment.x2}</X>\n`;
-          output += `          <Y>${segment.y2}</Y>\n`;
-          output += "        </End>\n";
-          output += "      </Segment>\n";
         }
-      }
-      output += "    </Path>\n";
+        output += "    </Path>\n";
+      });
     }
     output += "  </Trajectory>\n";
   }
