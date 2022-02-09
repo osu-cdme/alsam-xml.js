@@ -101,6 +101,13 @@ function getSegmentStyles(xmlDoc: XMLDocument): Set<SegmentStyle> {
       travelers: travelers,
     };
 
+    // Check: syncDelay on each traveler only required if there is more than one traveler
+    if (travelers.length > 1) {
+      for (let traveler of travelers) {
+        assert(traveler.syncDelay, `INVALID SCHEMA: As Segment Style ${newSegmentStyle.ID} has multiple travelers, SyncDelay is required on each traveler!`);
+      }
+    }
+
     assert(!newSegmentStyle.laserMode || newSegmentStyle.laserMode === "Independent" || newSegmentStyle.laserMode === "FollowMe", "INVALID SCHEMA: LaserMode must be 'Independent' or 'FollowMe'!");
 
     output.add(newSegmentStyle);
@@ -217,9 +224,24 @@ function GetHeaderString(layer: Layer) {
 }
 
 function GetSegmentStylesString(layer: Layer) {
+
+  //* Check: Ensure no duplicate ids exist 
+  let ids = new Set<string>();
+  for (let segmentStyle of layer.segmentStyles) {
+    assert(!ids.has(segmentStyle.ID), `Invalid 'Layer' object: Duplicate SegmentStyle ID ${segmentStyle.ID}!`);
+    ids.add(segmentStyle.ID);
+  }
+
+  //* Check: Ensure at least one segment style exists 
+  assert(layer.segmentStyles.size > 0, "Invalid 'Layer' object: You must have at least one segment style!");
+
   let output = "";
   output += "<SegmentStyleList>\n";
   for (const segmentStyle of layer.segmentStyles) {
+
+    //* Check: Ensure linked Velocity Profile exists 
+    assert(Array.from(layer.velocityProfiles).find(vp => vp.ID === segmentStyle.velocityProfileID) != null, `Invalid 'Layer' object: Velocity Profile ${segmentStyle.velocityProfileID} referenced by Segment Style ${segmentStyle.ID} does not exist!`);
+
     output += "  <SegmentStyle>\n";
     output += `    <ID>${segmentStyle.ID}</ID>\n`;
     output += `    <VelocityProfileID>${segmentStyle.velocityProfileID}</VelocityProfileID>\n`;
@@ -255,6 +277,17 @@ function GetSegmentStylesString(layer: Layer) {
 }
 
 function GetVelocityProfilesString(layer: Layer) {
+
+  //* Check: Ensure no duplicate ids exist
+  let ids = new Set<string>();
+  for (let velocityProfile of layer.velocityProfiles) {
+    assert(!ids.has(velocityProfile.ID), `Invalid 'Layer' object: Duplicate VelocityProfile ID ${velocityProfile.ID}!`);
+    ids.add(velocityProfile.ID);
+  }
+
+  //* Check: Ensure at least one velocity profile exists
+  assert(layer.velocityProfiles.size > 0, "Invalid 'Layer' object: You must have at least one velocity profile!");
+
   let output = "";
   output += "<VelocityProfileList>\n";
   for (const velocityProfile of layer.velocityProfiles) {
@@ -299,6 +332,8 @@ function GetTrajectoriesString(layer: Layer) {
             if (segment.segmentID != null) {
               output += `        <SegmentID>${segment.segmentID}</SegmentID>\n`;
             }
+            //* Check: Ensure segment style id actually exists
+            assert(Array.from(layer.segmentStyles).find((segmentStyle: SegmentStyle) => segmentStyle.ID === segment.segStyle) != null, `Invalid 'Layer' object: SegmentStyle ID ${segment.segStyle} does not exist!`);
             output += `        <SegStyle>${segment.segStyle}</SegStyle>\n`;
             output += "        <End>\n";
             output += `          <X>${segment.x2}</X>\n`;

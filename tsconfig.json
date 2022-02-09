@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./build",
+    "declaration": true, 
     "rootDir": "./src",
     "noImplicitAny": true,
     "module": "esnext",
